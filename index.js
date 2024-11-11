@@ -1,10 +1,10 @@
 const { Client, GatewayIntentBits } = require('discord.js');
-const client = new Client({ 
-  intents: [ 
+const client = new Client({
+  intents: [
     GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMembers, 
-    GatewayIntentBits.MessageContent 
-  ] 
+    GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.MessageContent
+  ]
 });
 
 // Replace with your bot's token
@@ -27,6 +27,9 @@ client.on('guildMemberAdd', (member) => {
   welcomeChannel.send(`Welcome to the server, ${member.user.tag}!`);
   welcomeChannel.send(`Total Members: ${member.guild.memberCount}`);
 });
+
+// Event for when the glitter gets puked?
+client.on(/** code here */);
 
 // Event for when a member leaves
 client.on('guildMemberRemove', (member) => {
