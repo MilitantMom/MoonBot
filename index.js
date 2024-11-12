@@ -1,6 +1,7 @@
 require('dotenv').config();
+// Removed the logging of the API key and token
 const { Client, GatewayIntentBits } = require('discord.js');
-const axios = require('axios');
+const https = require('https');
 
 // Retrieve environment variables
 const token = process.env.DISCORD_TOKEN;
@@ -36,59 +37,79 @@ client.once('ready', () => {
   setInterval(fetchFreeGames, 86400000); // 24 hours in milliseconds
 });
 
-// Function to fetch free games from the Epic Games API
-async function fetchFreeGames() {
-  try {
-    const response = await axios.get('https://epic-games-free-games.p.rapidapi.com/free-games', {
-      headers: {
-        'X-RapidAPI-Key': epicGamesApiKey,
-        'X-RapidAPI-Host': 'epic-games-free-games.p.rapidapi.com'
-      }
+// Function to fetch free games from the Epic Games API using https module
+function fetchFreeGames() {
+  const options = {
+    method: 'GET',
+    hostname: 'free-epic-games.p.rapidapi.com',
+    path: '/free',
+    headers: {
+      'x-rapidapi-key': epicGamesApiKey,
+      'x-rapidapi-host': 'free-epic-games.p.rapidapi.com'
+    }
+  };
+
+  // Make the HTTP request
+  const req = https.request(options, (res) => {
+    let data = '';
+
+    // Listen for data chunks
+    res.on('data', (chunk) => {
+      data += chunk;
     });
 
-    // Validate the response structure
-    const freeGames = response.data;
-    if (!Array.isArray(freeGames) || freeGames.length === 0) {
-      console.warn("No free games available in the response.");
-      return;
-    }
+    // After response is complete, process the data
+    res.on('end', async () => {
+      try {
+        const freeGames = JSON.parse(data);
 
-    // Get the channel to send the message to
-    const channel = client.channels.cache.get(freeGamesChannelId);
-    if (!channel) {
-      console.warn("Free games channel not found!");
-      return;
-    }
+        // Validate the response structure
+        if (!Array.isArray(freeGames) || freeGames.length === 0) {
+          console.warn("No free games available in the response.");
+          return;
+        }
 
-    // Format the message for free games
-    const gameList = freeGames.map(game => `**${game.title}** - ${game.url}`).join('\n');
-    const message = `🎮 **Free Games Available on Epic Games Store** 🎮\n\n${gameList}\n\nHurry, grab them before they're gone!`;
+        // Get the channel to send the message to
+        const channel = client.channels.cache.get(freeGamesChannelId);
+        if (!channel) {
+          console.warn("Free games channel not found!");
+          return;
+        }
 
-    // Send the message to the channel
-    await channel.send(message);
+        // Format the message for free games
+        const gameList = freeGames.map(game => `**${game.title}** - ${game.url}`).join('\n');
+        const message = `🎮 **Free Games Available on Epic Games Store** 🎮\n\n${gameList}\n\nHurry, grab them before they're gone!`;
 
-  } catch (error) {
+        // Send the message to the channel
+        await channel.send(message);
+      } catch (error) {
+        console.error('Error processing free games response:', error.message);
+      }
+    });
+  });
+
+  // Handle errors with the request
+  req.on('error', (error) => {
     console.error('Error fetching free games:', error.message);
-  }
+  });
+
+  // End the request
+  req.end();
 }
 
 // Event for when a new member joins
 client.on('guildMemberAdd', async (member) => {
-  // Use the channel ID directly
   const welcomeChannel = member.guild.channels.cache.get('282359486461509632');
   if (!welcomeChannel) {
     console.warn("Welcome channel not found!");
     return;
   }
 
-  // Get the inviter by fetching the audit logs
   const fetchInvites = await member.guild.invites.fetch();
   const usedInvite = fetchInvites.find(invite => invite.uses > 0 && invite.inviter);
 
-  // If the inviter is found
   const invitedBy = usedInvite ? usedInvite.inviter.tag : 'Unknown';
 
-  // Construct the welcome message
   const welcomeMessage = `
     **${member.user.tag}** just joined **${member.guild.name}**, Welcome!
     **Account Created On:** ${member.user.createdAt.toDateString()}
@@ -96,7 +117,6 @@ client.on('guildMemberAdd', async (member) => {
     **Total Members:** ${member.guild.memberCount}
   `;
 
-  // Send the welcome message with the user's avatar
   welcomeChannel.send({ 
     content: welcomeMessage, 
     files: [member.user.displayAvatarURL({ dynamic: true, size: 512 })] 
@@ -105,14 +125,12 @@ client.on('guildMemberAdd', async (member) => {
 
 // Event for when a member leaves
 client.on('guildMemberRemove', (member) => {
-  // Use the channel ID directly
   const welcomeChannel = member.guild.channels.cache.get('282359486461509632');
   if (!welcomeChannel) {
     console.warn("Welcome channel not found!");
     return;
   }
 
-  // Construct and send the goodbye message with the updated member count
   const goodbyeMessage = `
     Goodbye, ${member.user.tag}! We're sad to see you go. 
     **Total Members:** ${member.guild.memberCount}
