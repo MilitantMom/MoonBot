@@ -61,3 +61,9 @@
 {"level":"warn","message":"No free games available in the response.","timestamp":"2024-11-12T19:37:35.387Z"}
 {"level":"info","message":"Message received: <@1305228572046262374> maybe this will work, a newer LLO model!","timestamp":"2024-11-12T19:41:48.270Z"}
 {"level":"error","message":"Error while calling OpenAI: ","timestamp":"2024-11-12T19:41:48.456Z"}
+{"level":"info","message":"BOT ONLINE","timestamp":"2024-11-12T21:49:32.521Z"}
+{"level":"warn","message":"Unexpected free games format.","timestamp":"2024-11-12T21:49:32.949Z"}
+{"level":"info","message":"Message received: <@1305228572046262374> please show off for my friend <@423027069853761544>","timestamp":"2024-11-12T21:49:58.456Z"}
+{"level":"error","message":"Error while calling OpenAI: ","timestamp":"2024-11-12T21:49:59.480Z"}
+{"level":"info","message":"Message received: UGH","timestamp":"2024-11-12T21:50:05.729Z"}
+{"level":"info","message":"Message received: lmao it’s alive","timestamp":"2024-11-12T21:54:25.615Z"}

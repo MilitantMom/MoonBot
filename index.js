@@ -189,12 +189,13 @@ client.on('messageCreate', async (message) => {
       logger.debug(`Received user input: "${userInput}"`);
 
       const chatResponse = await openai.chat.completions.create({
-        model: 'gpt-4',
+        model: 'gpt-4o-mini', // or 'gpt-4-turbo' based on your plan
         messages: [
           { role: 'system', content: 'You are MoonBot, a catgirl communist who cares about the health, safety, and enjoyment of the discord server.' },
           { role: 'user', content: userInput }
         ],
-      });
+        temperature: 0.7,  // Optional but recommended
+      });      
 
       const responseContent = chatResponse.choices[0].message.content;
       message.reply(responseContent.slice(0, 2000)); // Trim to Discord's message limit
