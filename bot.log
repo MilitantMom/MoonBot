@@ -1,0 +1,63 @@
+{"level":"info","message":"Bot is online and ready!","timestamp":"2024-11-12T05:02:21.254Z"}
+{"level":"warn","message":"No free games available in the response.","timestamp":"2024-11-12T05:02:21.732Z"}
+{"level":"info","message":"Bot is online and ready!","timestamp":"2024-11-12T17:40:46.612Z"}
+{"level":"warn","message":"No free games available in the response.","timestamp":"2024-11-12T17:40:47.121Z"}
+{"level":"info","message":"Bot is online and ready!","timestamp":"2024-11-12T17:48:34.242Z"}
+{"level":"warn","message":"No free games available in the response.","timestamp":"2024-11-12T17:48:34.871Z"}
+{"level":"info","message":"Bot is online and ready!","timestamp":"2024-11-12T17:54:30.771Z"}
+{"level":"warn","message":"No free games available in the response.","timestamp":"2024-11-12T17:54:31.510Z"}
+{"level":"info","message":"Bot is online and ready!","timestamp":"2024-11-12T17:58:55.269Z"}
+{"level":"warn","message":"No free games available in the response.","timestamp":"2024-11-12T17:58:55.788Z"}
+{"level":"info","message":"Bot is online and ready!","timestamp":"2024-11-12T18:18:36.139Z"}
+{"level":"warn","message":"No free games available in the response.","timestamp":"2024-11-12T18:18:36.784Z"}
+{"level":"info","message":"Bot is online and ready!","timestamp":"2024-11-12T18:33:38.724Z"}
+{"level":"warn","message":"No free games available in the response.","timestamp":"2024-11-12T18:33:39.477Z"}
+{"level":"info","message":"Message received: !ping","timestamp":"2024-11-12T18:33:54.906Z"}
+{"level":"info","message":"Ping command used.","timestamp":"2024-11-12T18:33:54.908Z"}
+{"level":"info","message":"Message received: 😮","timestamp":"2024-11-12T18:33:57.787Z"}
+{"level":"info","message":"Message received: <@1305228572046262374> What is your purpose?","timestamp":"2024-11-12T18:34:04.865Z"}
+{"level":"info","message":"Bot is online and ready!","timestamp":"2024-11-12T18:38:43.907Z"}
+{"level":"warn","message":"No free games available in the response.","timestamp":"2024-11-12T18:38:44.432Z"}
+{"level":"info","message":"Message received: !ping","timestamp":"2024-11-12T18:38:51.304Z"}
+{"level":"info","message":"Ping command used.","timestamp":"2024-11-12T18:38:51.306Z"}
+{"level":"info","message":"Message received: <@1305228572046262374> what is your purpose?","timestamp":"2024-11-12T18:39:01.599Z"}
+{"level":"error","message":"Error while calling OpenAI:","timestamp":"2024-11-12T18:39:03.682Z"}
+{"level":"info","message":"Message received: ok thats actually encouraging","timestamp":"2024-11-12T18:39:11.314Z"}
+{"level":"info","message":"Bot is online and ready!","timestamp":"2024-11-12T18:42:58.100Z"}
+{"level":"warn","message":"No free games available in the response.","timestamp":"2024-11-12T18:42:58.750Z"}
+{"level":"info","message":"Message received: !ping","timestamp":"2024-11-12T18:43:05.383Z"}
+{"level":"info","message":"Ping command used.","timestamp":"2024-11-12T18:43:05.385Z"}
+{"level":"info","message":"Message received: <@1305228572046262374> What is your purpose?","timestamp":"2024-11-12T18:43:12.504Z"}
+{"level":"error","message":"Error while calling OpenAI:","timestamp":"2024-11-12T18:43:14.106Z"}
+{"level":"info","message":"Bot is online and ready!","timestamp":"2024-11-12T18:47:15.976Z"}
+{"level":"warn","message":"No free games available in the response.","timestamp":"2024-11-12T18:47:16.495Z"}
+{"level":"info","message":"Message received: !ping","timestamp":"2024-11-12T18:47:24.383Z"}
+{"level":"info","message":"Ping command used.","timestamp":"2024-11-12T18:47:24.385Z"}
+{"level":"info","message":"Message received: <@1305228572046262374> please tell me your purpose (or at least give me a useful error message, also hichatgpt lmao)","timestamp":"2024-11-12T18:47:42.999Z"}
+{"level":"error","message":"Error while calling OpenAI:","timestamp":"2024-11-12T18:47:44.675Z"}
+{"level":"info","message":"Message received: <@&1305247819367452755> hi uwu","timestamp":"2024-11-12T18:50:39.430Z"}
+{"level":"error","message":"Error while calling OpenAI:","timestamp":"2024-11-12T18:50:41.069Z"}
+{"level":"info","message":"BOT ONLINE","timestamp":"2024-11-12T18:52:43.435Z"}
+{"level":"warn","message":"No free games available in the response.","timestamp":"2024-11-12T18:52:44.065Z"}
+{"level":"info","message":"Message received: !ping","timestamp":"2024-11-12T18:52:54.942Z"}
+{"level":"info","message":"Ping command used.","timestamp":"2024-11-12T18:52:54.944Z"}
+{"level":"info","message":"Message received: <@1305228572046262374> please girl please","timestamp":"2024-11-12T18:53:01.563Z"}
+{"level":"error","message":"Error while calling OpenAI:","timestamp":"2024-11-12T18:53:03.395Z"}
+{"level":"info","message":"BOT ONLINE","timestamp":"2024-11-12T18:59:25.107Z"}
+{"level":"warn","message":"No free games available in the response.","timestamp":"2024-11-12T18:59:25.667Z"}
+{"level":"info","message":"Message received: <@1305228572046262374> surely this will work","timestamp":"2024-11-12T18:59:30.930Z"}
+{"level":"error","message":"Error while calling OpenAI: ","timestamp":"2024-11-12T18:59:32.583Z"}
+{"level":"info","message":"BOT ONLINE","timestamp":"2024-11-12T19:08:15.193Z"}
+{"level":"warn","message":"No free games available in the response.","timestamp":"2024-11-12T19:08:15.847Z"}
+{"level":"info","message":"Message received: ","timestamp":"2024-11-12T19:17:45.459Z"}
+{"level":"info","message":"Message received: ","timestamp":"2024-11-12T19:17:54.755Z"}
+{"level":"info","message":"Message received: Hello","timestamp":"2024-11-12T19:18:01.503Z"}
+{"level":"info","message":"Message received: ","timestamp":"2024-11-12T19:18:20.101Z"}
+{"level":"info","message":"Message received: <@1305228572046262374> are you responding yet or is brain still broken?","timestamp":"2024-11-12T19:19:03.213Z"}
+{"level":"error","message":"Error while calling OpenAI: ","timestamp":"2024-11-12T19:19:05.117Z"}
+{"level":"info","message":"Message received: <@1305228572046262374> hi","timestamp":"2024-11-12T19:35:18.567Z"}
+{"level":"error","message":"Error while calling OpenAI: ","timestamp":"2024-11-12T19:35:20.374Z"}
+{"level":"info","message":"BOT ONLINE","timestamp":"2024-11-12T19:37:34.809Z"}
+{"level":"warn","message":"No free games available in the response.","timestamp":"2024-11-12T19:37:35.387Z"}
+{"level":"info","message":"Message received: <@1305228572046262374> maybe this will work, a newer LLO model!","timestamp":"2024-11-12T19:41:48.270Z"}
+{"level":"error","message":"Error while calling OpenAI: ","timestamp":"2024-11-12T19:41:48.456Z"}

@@ -3,6 +3,7 @@ const { Client, GatewayIntentBits } = require('discord.js');
 const https = require('https');
 const cron = require('node-cron');
 const winston = require('winston');
+const { OpenAI } = require('openai'); // Import OpenAI package
 
 // Initialize logger
 const logger = winston.createLogger({
@@ -22,10 +23,11 @@ const token = process.env.DISCORD_TOKEN;
 const epicGamesApiKey = process.env.EPICGAMESFREE_KEY;
 const freeGamesChannelId = process.env.FREE_GAMES_CHANNEL_ID; // Now in .env
 const welcomeChannelId = process.env.WELCOME_CHANNEL_ID; // Now in .env
+const openaiApiKey = process.env.OPENAI_API_KEY; // Add OpenAI API Key
 
 // Check if necessary environment variables are present
-if (!token || !epicGamesApiKey || !freeGamesChannelId || !welcomeChannelId) {
-  logger.error("Missing environment variables. Please set DISCORD_TOKEN, EPICGAMESFREE_KEY, FREE_GAMES_CHANNEL_ID, and WELCOME_CHANNEL_ID in your .env file.");
+if (!token || !epicGamesApiKey || !freeGamesChannelId || !welcomeChannelId || !openaiApiKey) {
+  logger.error("Missing environment variables. Please set DISCORD_TOKEN, EPICGAMESFREE_KEY, FREE_GAMES_CHANNEL_ID, WELCOME_CHANNEL_ID, and OPENAI_API_KEY in your .env file.");
   process.exit(1); // Exit the program if any critical variables are missing
 }
 
@@ -33,13 +35,19 @@ const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.MessageContent
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMessages, // Added this to ensure message content can be received
   ]
+});
+
+// Initialize OpenAI client
+const openai = new OpenAI({
+  apiKey: openaiApiKey,
 });
 
 // This event runs when the bot is ready
 client.once('ready', () => {
-  logger.info('Bot is online and ready!');
+  logger.info('BOT ONLINE');
   // Fetch free games immediately after bot starts
   fetchFreeGames();
 
@@ -142,6 +150,7 @@ client.on('guildMemberAdd', async (member) => {
     **Total Members:** ${member.guild.memberCount}
   `;
 
+  // Send the welcome message along with the user's avatar
   welcomeChannel.send({ 
     content: welcomeMessage, 
     files: [member.user.displayAvatarURL({ dynamic: true, size: 512 })] 
@@ -161,6 +170,57 @@ client.on('guildMemberRemove', (member) => {
     **Total Members:** ${member.guild.memberCount}
   `;
   welcomeChannel.send(goodbyeMessage);
+});
+
+client.on('messageCreate', async (message) => {
+  if (message.author.bot) return;
+
+  // Log the received message
+  logger.info(`Message received: ${message.content}`);
+
+  // Check if the message is the !ping command
+  if (message.content === '!ping') {
+    message.reply('Pong!');
+    logger.info('Ping command used.');
+    return;
+  }
+
+  // Check if the message mentions @moonbot
+  if (message.mentions.has(client.user)) {
+    const userInput = message.content.replace(`<@${client.user.id}>`, '').trim(); // Extract the text after the mention
+
+    if (!userInput) {
+      message.reply("Please provide a message for me to respond to.");
+      return;
+    }
+
+    try {
+      logger.debug(`Received user input: "${userInput}"`); // Log the input before calling OpenAI
+
+      const chatResponse = await openai.chat.completions.create({
+        model: 'gpt-4', // Updated to use the more powerful GPT-4 model
+        messages: [
+          { role: 'system', content: 'You are MoonBot, a catgirl communist who cares about the health, safety, and enjoyment of the discord server.' }, // This sets the personality
+          { role: 'user', content: userInput } // The message the user sent
+        ],
+      });
+
+      logger.debug(`OpenAI response: ${JSON.stringify(chatResponse)}`); // Log the entire OpenAI response
+
+      // Send back the response from ChatGPT
+      message.reply(chatResponse.choices[0].message.content);
+
+      // Log the reply sent by the bot
+      logger.info(`Replied with: ${chatResponse.choices[0].message.content}`);
+    } catch (error) {
+      // Enhanced error logging
+      logger.error('Error while calling OpenAI: ', error.message);
+      if (error.response) {
+        logger.error('OpenAI response error:', JSON.stringify(error.response.data, null, 2));
+      }
+      message.reply("Oops, something went wrong while trying to get an answer from my brain!");
+    }
+  }
 });
 
 // Log in to Discord with the token from the .env file
