@@ -1,22 +1,32 @@
 require('dotenv').config();
-// Removed the logging of the API key and token
 const { Client, GatewayIntentBits } = require('discord.js');
 const https = require('https');
+const cron = require('node-cron');
+const winston = require('winston');
+
+// Initialize logger
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json()
+  ),
+  transports: [
+    new winston.transports.Console(),
+    new winston.transports.File({ filename: 'bot.log' })
+  ],
+});
 
 // Retrieve environment variables
 const token = process.env.DISCORD_TOKEN;
 const epicGamesApiKey = process.env.EPICGAMESFREE_KEY;
-const freeGamesChannelId = '1050579937125474304'; // Free stuff channel ID
+const freeGamesChannelId = process.env.FREE_GAMES_CHANNEL_ID; // Now in .env
+const welcomeChannelId = process.env.WELCOME_CHANNEL_ID; // Now in .env
 
 // Check if necessary environment variables are present
-if (!token) {
-  console.error("Bot token not found! Make sure you have set DISCORD_TOKEN in your .env file.");
-  process.exit(1); // Exit the program if the token is missing
-}
-
-if (!epicGamesApiKey) {
-  console.error("Epic Games API key not found! Make sure you have set EPICGAMESFREE_KEY in your .env file.");
-  process.exit(1); // Exit the program if the API key is missing
+if (!token || !epicGamesApiKey || !freeGamesChannelId || !welcomeChannelId) {
+  logger.error("Missing environment variables. Please set DISCORD_TOKEN, EPICGAMESFREE_KEY, FREE_GAMES_CHANNEL_ID, and WELCOME_CHANNEL_ID in your .env file.");
+  process.exit(1); // Exit the program if any critical variables are missing
 }
 
 const client = new Client({
@@ -29,12 +39,12 @@ const client = new Client({
 
 // This event runs when the bot is ready
 client.once('ready', () => {
-  console.log('Bot is online and ready!');
+  logger.info('Bot is online and ready!');
   // Fetch free games immediately after bot starts
   fetchFreeGames();
-  
-  // Set a timer for fetching free games every 24 hours
-  setInterval(fetchFreeGames, 86400000); // 24 hours in milliseconds
+
+  // Set up cron job to fetch free games every 24 hours
+  cron.schedule('0 0 * * *', fetchFreeGames); // Runs every day at midnight server time
 });
 
 // Function to fetch free games from the Epic Games API using https module
@@ -65,14 +75,14 @@ function fetchFreeGames() {
 
         // Validate the response structure
         if (!Array.isArray(freeGames) || freeGames.length === 0) {
-          console.warn("No free games available in the response.");
+          logger.warn("No free games available in the response.");
           return;
         }
 
         // Get the channel to send the message to
         const channel = client.channels.cache.get(freeGamesChannelId);
         if (!channel) {
-          console.warn("Free games channel not found!");
+          logger.warn("Free games channel not found!");
           return;
         }
 
@@ -83,31 +93,46 @@ function fetchFreeGames() {
         // Send the message to the channel
         await channel.send(message);
       } catch (error) {
-        console.error('Error processing free games response:', error.message);
+        logger.error('Error processing free games response:', error.message);
       }
     });
   });
 
   // Handle errors with the request
   req.on('error', (error) => {
-    console.error('Error fetching free games:', error.message);
+    logger.error('Error fetching free games:', error.message);
   });
 
   // End the request
   req.end();
 }
 
-// Event for when a new member joins
+// Fetch the inviter once per guild instead of on every member join (caching invites)
+let inviteCache = {};
+
+async function fetchInvites(guild) {
+  try {
+    const invites = await guild.invites.fetch();
+    inviteCache[guild.id] = invites;
+  } catch (error) {
+    logger.error("Error fetching invites:", error.message);
+  }
+}
+
+// Event for when the bot joins a guild or a new member joins
 client.on('guildMemberAdd', async (member) => {
-  const welcomeChannel = member.guild.channels.cache.get('282359486461509632');
+  // Fetch invites if it's the first time joining the guild
+  if (!inviteCache[member.guild.id]) {
+    await fetchInvites(member.guild);
+  }
+
+  const welcomeChannel = member.guild.channels.cache.get(welcomeChannelId);
   if (!welcomeChannel) {
-    console.warn("Welcome channel not found!");
+    logger.warn("Welcome channel not found!");
     return;
   }
 
-  const fetchInvites = await member.guild.invites.fetch();
-  const usedInvite = fetchInvites.find(invite => invite.uses > 0 && invite.inviter);
-
+  const usedInvite = inviteCache[member.guild.id]?.find(invite => invite.uses > 0 && invite.inviter);
   const invitedBy = usedInvite ? usedInvite.inviter.tag : 'Unknown';
 
   const welcomeMessage = `
@@ -125,9 +150,9 @@ client.on('guildMemberAdd', async (member) => {
 
 // Event for when a member leaves
 client.on('guildMemberRemove', (member) => {
-  const welcomeChannel = member.guild.channels.cache.get('282359486461509632');
+  const welcomeChannel = member.guild.channels.cache.get(welcomeChannelId);
   if (!welcomeChannel) {
-    console.warn("Welcome channel not found!");
+    logger.warn("Welcome channel not found!");
     return;
   }
 
@@ -140,5 +165,5 @@ client.on('guildMemberRemove', (member) => {
 
 // Log in to Discord with the token from the .env file
 client.login(token).catch(err => {
-  console.error("Failed to log in. Check your token:", err);
+  logger.error("Failed to log in. Check your token:", err);
 });
