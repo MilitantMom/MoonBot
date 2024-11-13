@@ -67,3 +67,15 @@
 {"level":"error","message":"Error while calling OpenAI: ","timestamp":"2024-11-12T21:49:59.480Z"}
 {"level":"info","message":"Message received: UGH","timestamp":"2024-11-12T21:50:05.729Z"}
 {"level":"info","message":"Message received: lmao it’s alive","timestamp":"2024-11-12T21:54:25.615Z"}
+{"level":"info","message":"BOT ONLINE","timestamp":"2024-11-13T03:16:22.800Z"}
+{"level":"warn","message":"Unexpected free games format.","timestamp":"2024-11-13T03:16:23.281Z"}
+{"level":"info","message":"Message received: !ping","timestamp":"2024-11-13T03:16:52.481Z"}
+{"level":"info","message":"Ping command used.","timestamp":"2024-11-13T03:16:52.483Z"}
+{"level":"info","message":"Message received: <@&1305247819367452755> What is your purpose?","timestamp":"2024-11-13T03:17:04.121Z"}
+{"level":"error","message":"Error while calling OpenAI: ","timestamp":"2024-11-13T03:17:06.289Z"}
+{"level":"info","message":"BOT ONLINE","timestamp":"2024-11-13T21:01:21.053Z"}
+{"level":"warn","message":"Unexpected free games format.","timestamp":"2024-11-13T21:01:21.690Z"}
+{"level":"info","message":"Message received: !ping","timestamp":"2024-11-13T21:01:38.303Z"}
+{"level":"info","message":"Ping command used.","timestamp":"2024-11-13T21:01:38.305Z"}
+{"level":"info","message":"Message received: <@1305228572046262374> what is your purpose?","timestamp":"2024-11-13T21:01:44.690Z"}
+{"level":"error","message":"Error while calling OpenAI: ","timestamp":"2024-11-13T21:01:45.448Z"}

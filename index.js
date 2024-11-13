@@ -18,22 +18,30 @@ const logger = winston.createLogger({
   ],
 });
 
-// Retrieve environment variables
-const token = process.env.DISCORD_TOKEN;
-const epicGamesApiKey = process.env.EPICGAMESFREE_KEY;
-const freeGamesChannelId = process.env.FREE_GAMES_CHANNEL_ID;
-const welcomeChannelId = process.env.WELCOME_CHANNEL_ID;
-const openaiApiKey = process.env.OPENAI_API_KEY;
+// List required environment variables
+const requiredEnvVars = [
+  'DISCORD_TOKEN',
+  'EPICGAMESFREE_KEY',
+  'FREE_GAMES_CHANNEL_ID',
+  'WELCOME_CHANNEL_ID',
+  'OPENAI_API_KEY',
+];
 
-// Check if necessary environment variables are present
-if (!token) logger.error("Missing DISCORD_TOKEN in .env");
-if (!epicGamesApiKey) logger.error("Missing EPICGAMESFREE_KEY in .env");
-if (!freeGamesChannelId) logger.error("Missing FREE_GAMES_CHANNEL_ID in .env");
-if (!welcomeChannelId) logger.error("Missing WELCOME_CHANNEL_ID in .env");
-if (!openaiApiKey) logger.error("Missing OPENAI_API_KEY in .env");
-if (!token || !epicGamesApiKey || !freeGamesChannelId || !welcomeChannelId || !openaiApiKey) {
-  process.exit(1); // Exit if any critical variables are missing
-}
+requiredEnvVars.forEach((envVar) => {
+  if (!process.env[envVar]) {
+    logger.error(`Missing ${envVar} in .env`);
+    process.exit(1);
+  }
+});
+
+// Retrieve environment variables
+const {
+  DISCORD_TOKEN: token,
+  EPICGAMESFREE_KEY: epicGamesApiKey,
+  FREE_GAMES_CHANNEL_ID: freeGamesChannelId,
+  WELCOME_CHANNEL_ID: welcomeChannelId,
+  OPENAI_API_KEY: openaiApiKey
+} = process.env;
 
 const client = new Client({
   intents: [
@@ -46,7 +54,7 @@ const client = new Client({
 
 // Initialize OpenAI client
 const openai = new OpenAI({
-  apiKey: openaiApiKey,
+  apiKey: openaiApiKey, // Set the API key from the environment variable
 });
 
 // This event runs when the bot is ready
@@ -81,8 +89,9 @@ function fetchFreeGames() {
       try {
         const freeGames = JSON.parse(data);
 
+        // Improved validation for free games data format
         if (!Array.isArray(freeGames) || freeGames.some(game => !game.title || !game.url)) {
-          logger.warn("Unexpected free games format.");
+          logger.warn("Received unexpected data format for free games.");
           return;
         }
 
@@ -112,6 +121,13 @@ function fetchFreeGames() {
 // Invite cache to store invites
 let inviteCache = {};
 
+// Refresh invite cache periodically (e.g., every 10 minutes)
+setInterval(async () => {
+  client.guilds.cache.forEach(async (guild) => {
+    await fetchInvites(guild);
+  });
+}, 10 * 60 * 1000);
+
 async function fetchInvites(guild) {
   try {
     const invites = await guild.invites.fetch();
@@ -132,7 +148,7 @@ client.on('guildMemberAdd', async (member) => {
     return;
   }
 
-  const usedInvite = await inviteCache[member.guild.id]?.find(async invite => await invite.uses > 0 && invite.inviter);
+  const usedInvite = inviteCache[member.guild.id]?.find(invite => invite.uses > 0 && invite.inviter);
   const invitedBy = usedInvite ? usedInvite.inviter.tag : 'Unknown';
 
   const welcomeMessage = `
@@ -189,28 +205,26 @@ client.on('messageCreate', async (message) => {
       logger.debug(`Received user input: "${userInput}"`);
 
       const chatResponse = await openai.chat.completions.create({
-        model: 'gpt-4o-mini', // or 'gpt-4-turbo' based on your plan
+        model: 'gpt-4o-mini', // Use the model you're authorized to access
         messages: [
-          { role: 'system', content: 'You are MoonBot, a catgirl communist who cares about the health, safety, and enjoyment of the discord server.' },
-          { role: 'user', content: userInput }
+          { role: 'user', content: userInput },
         ],
         temperature: 0.7,  // Optional but recommended
-      });      
+      });
 
-      const responseContent = chatResponse.choices[0].message.content;
-      message.reply(responseContent.slice(0, 2000)); // Trim to Discord's message limit
-      logger.info(`Replied with: ${responseContent}`);
-    } catch (error) {
-      logger.error('Error while calling OpenAI: ', error.message);
-      if (error.response) {
-        logger.error('OpenAI response error:', JSON.stringify(error.response.data, null, 2));
+      const messageContent = chatResponse.choices[0].message.content;
+
+      if (messageContent.length > 2000) {
+        message.reply(messageContent.slice(0, 2000)); // Trim response to fit Discord's message length
+      } else {
+        message.reply(messageContent);
       }
-      message.reply("Oops, something went wrong while trying to get an answer from my brain!");
+    } catch (error) {
+      logger.error('Error processing OpenAI response:', error.message);
+      message.reply("Oops! Something went wrong with my response.");
     }
   }
 });
 
-client.login(token).catch(err => {
-  logger.error("Failed to log in. Check your token:", err);
-  process.exit(1);
-});
+// Log into Discord
+client.login(token);
