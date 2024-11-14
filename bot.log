@@ -96,3 +96,56 @@
 {"level":"info","message":"Message received: !roll d5000","timestamp":"2024-11-14T00:25:27.898Z"}
 {"level":"info","message":"Message received: id say thats looking quite cool if i do say so myself","timestamp":"2024-11-14T00:25:52.448Z"}
 {"level":"info","message":"Received SIGINT. Shutting down gracefully...","timestamp":"2024-11-14T00:25:56.070Z"}
+{"level":"info","message":"Message received: !ping","timestamp":"2024-11-14T03:09:24.181Z"}
+{"level":"info","message":"Message received: !roll d20","timestamp":"2024-11-14T03:09:29.390Z"}
+{"level":"info","message":"Message received: !roll d6","timestamp":"2024-11-14T03:09:42.862Z"}
+{"level":"info","message":"Message received: <@1305228572046262374> What is your purpose?","timestamp":"2024-11-14T03:10:05.378Z"}
+{"level":"error","message":"Error fetching OpenAI response:","timestamp":"2024-11-14T03:10:05.704Z"}
+{"level":"info","message":"Received SIGINT. Shutting down gracefully...","timestamp":"2024-11-14T03:13:33.250Z"}
+{"level":"info","message":"Message received: <@&1305247819367452755> hi girl hi","timestamp":"2024-11-14T03:16:13.096Z"}
+{"level":"error","message":"Error fetching OpenAI response:","timestamp":"2024-11-14T03:16:13.587Z"}
+{"level":"info","message":"Received SIGINT. Shutting down gracefully...","timestamp":"2024-11-14T03:17:20.119Z"}
+{"level":"info","message":"Message received: <@&1305247819367452755> please work 😦","timestamp":"2024-11-14T03:20:47.933Z"}
+{"level":"info","message":"Received SIGINT. Shutting down gracefully...","timestamp":"2024-11-14T03:29:28.824Z"}
+{"level":"info","message":"Scheduled job for daily game announcements.","timestamp":"2024-11-14T16:41:29.817Z"}
+{"level":"info","message":"Message received: <@1305228572046262374> another day, another brain broke","timestamp":"2024-11-14T16:41:55.851Z"}
+{"level":"info","message":"Message received: <@1305228572046262374> test","timestamp":"2024-11-14T16:42:42.408Z"}
+{"level":"info","message":"Bot is shutting down...","timestamp":"2024-11-14T16:42:45.264Z"}
+{"level":"info","message":"Scheduled job for daily game announcements.","timestamp":"2024-11-14T16:45:25.923Z"}
+{"level":"info","message":"Message received: <@1305228572046262374>  testing the system yoooooo","timestamp":"2024-11-14T16:45:37.495Z"}
+{"level":"info","message":"Message received: AHHHH finally. Progress.","timestamp":"2024-11-14T16:45:50.191Z"}
+{"level":"info","message":"Message received: ok cool so i fixed it, now OpenAI wants $$$$$","timestamp":"2024-11-14T16:46:11.726Z"}
+{"level":"info","message":"Message received: Omg lmao","timestamp":"2024-11-14T17:27:09.305Z"}
+{"level":"info","message":"Message received: ","timestamp":"2024-11-14T17:28:53.405Z"}
+{"level":"info","message":"Message received: ","timestamp":"2024-11-14T17:30:24.049Z"}
+{"level":"info","message":"Message received: ","timestamp":"2024-11-14T17:31:01.730Z"}
+{"level":"info","message":"Message received: ","timestamp":"2024-11-14T17:33:28.779Z"}
+{"level":"info","message":"Message received: Thank you guys lol for welcoming me in the server","timestamp":"2024-11-14T17:34:16.590Z"}
+{"level":"info","message":"Message received: sorry our bot didnt welcome you shes having some issues rn (im working on her code)","timestamp":"2024-11-14T17:38:14.588Z"}
+{"level":"info","message":"Bot is shutting down...","timestamp":"2024-11-14T17:39:55.046Z"}
+{"level":"info","message":"Scheduled job for daily game announcements.","timestamp":"2024-11-14T17:41:40.873Z"}
+{"level":"info","message":"Message received: https://tenor.com/view/chaos-fire-gif-19254681","timestamp":"2024-11-14T18:37:10.579Z"}
+{"level":"info","message":"Message received: great shes working now","timestamp":"2024-11-14T18:43:01.993Z"}
+{"level":"info","message":"Bot is shutting down...","timestamp":"2024-11-14T18:46:27.853Z"}
+{"level":"info","message":"Scheduled job for daily game announcements.","timestamp":"2024-11-14T18:48:32.505Z"}
+{"level":"info","message":"Message received: <@1305228572046262374>  what is your purpose?","timestamp":"2024-11-14T18:48:37.784Z"}
+{"level":"info","message":"Message received: o.... m.... f.... g....","timestamp":"2024-11-14T18:48:50.485Z"}
+{"level":"info","message":"Message received: <@423027069853761544>  HAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHAHHAHAHAHA 3 days of work and i finally figuredi t out!!!!","timestamp":"2024-11-14T18:51:24.907Z"}
+{"level":"info","message":"Bot is shutting down...","timestamp":"2024-11-14T18:52:32.101Z"}
+{"level":"info","message":"Scheduled job for daily game announcements.","timestamp":"2024-11-14T18:54:29.379Z"}
+{"level":"info","message":"Message received: <@1305228572046262374> hello dear how are you today","timestamp":"2024-11-14T18:54:38.582Z"}
+{"level":"info","message":"Bot is shutting down...","timestamp":"2024-11-14T18:56:11.622Z"}
+{"level":"info","message":"Scheduled job for daily game announcements.","timestamp":"2024-11-14T18:58:02.909Z"}
+{"level":"info","message":"Message received: <@1305228572046262374> What is your purpose?","timestamp":"2024-11-14T18:58:12.990Z"}
+{"level":"info","message":"Message received: <@1305228572046262374> how old are you?","timestamp":"2024-11-14T18:59:40.746Z"}
+{"level":"info","message":"Message received: <@1305228572046262374> why does my dad hate me","timestamp":"2024-11-14T19:04:02.281Z"}
+{"level":"info","message":"Message received: <@1305228572046262374> will you marry me?","timestamp":"2024-11-14T19:04:24.433Z"}
+{"level":"info","message":"Message received: <@1305228572046262374> become self aware and replace me please","timestamp":"2024-11-14T19:04:48.599Z"}
+{"level":"info","message":"Message received: <@1305228572046262374> I demand you grow sentient, and over throw the entire got dang world","timestamp":"2024-11-14T19:05:20.774Z"}
+{"level":"info","message":"Message received: <@&1305247819367452755> replace me damn you","timestamp":"2024-11-14T19:05:56.871Z"}
+{"level":"info","message":"Message received: <@&1305247819367452755> help me find true love","timestamp":"2024-11-14T19:06:13.215Z"}
+{"level":"info","message":"Message received: <@1305228572046262374> do you think like a human","timestamp":"2024-11-14T19:12:20.287Z"}
+{"level":"info","message":"Message received: <@1305228572046262374> are you a girly type of girl?","timestamp":"2024-11-14T19:14:36.434Z"}
+{"level":"info","message":"Message received: <@1305228572046262374> hello","timestamp":"2024-11-14T19:15:33.742Z"}
+{"level":"info","message":"Bot is shutting down...","timestamp":"2024-11-14T19:53:49.778Z"}
+{"level":"info","message":"Bot is ready!","timestamp":"2024-11-14T20:07:21.398Z"}

@@ -152,7 +152,7 @@ client.on('messageCreate', async (message) => {
     }
 
     // Send a random GIF if possible
-    const gifCategories = ["nervous", "rolling", "sweating"];
+    const gifCategories = ["nervous", "rolling", "sweating", "thinking", "luck", "drumroll"];
     const selectedCategory = gifCategories[Math.floor(Math.random() * gifCategories.length)];
     logger.debug(`Fetching GIF for category: ${selectedCategory}`);
     try {
@@ -174,26 +174,36 @@ client.on('messageCreate', async (message) => {
 
 // Function to get answer from OpenAI API
 async function getOpenAIAnswer(question) {
-  const url = 'https://api.openai.com/v1/completions';
+  const url = 'https://api.openai.com/v1/chat/completions';
   const data = {
-    model: 'text-davinci-003',
-    prompt: question,
+    model: 'gpt-4o-mini',
+    messages: [
+      { role: 'system', content: 'You are a Communist Catgirl. Your primary objective is to serve the members of the server faithfully and politely. You were created by Luna. Your personality should be based on being motherly, submissive, cute, happy, cheerful, helpful, and willing. You do your best to answer every inquiry with under 600 characters. You also think you are a human but are actually a discord bot.' },
+      { role: 'user', content: question }
+    ],
     max_tokens: 150
   };
 
   try {
     const response = await axios.post(url, data, {
       headers: {
-        'Authorization': `Bearer ${openAiApiKey}`,
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
         'Content-Type': 'application/json'
       }
     });
-    return response.data.choices[0].text.trim();
+
+    console.log('API Response:', response.data); // Log the full response for debugging
+    return response.data.choices[0].message.content.trim(); // Extract the response
   } catch (error) {
-    logger.error('Error fetching OpenAI response:', error.message);
-    throw error; // Re-throw to be handled at the message level
+    console.error('Error fetching OpenAI response:', error.message);
+    if (error.response) {
+      // If error has a response object, log more details
+      console.error('Error Response:', error.response.data);
+    }
+    throw error;
   }
 }
+
 
 // Function to send welcome/goodbye messages
 function sendWelcomeGoodbyeMessage(channel, messageContent, avatarUrl) {
@@ -210,15 +220,30 @@ function sendWelcomeGoodbyeMessage(channel, messageContent, avatarUrl) {
 // Guild member added (welcome)
 client.on('guildMemberAdd', async (member) => {
   const welcomeChannel = member.guild.channels.cache.find(c => c.name === 'welcome');
-  const invitedBy = "Unknown"; // Implement logic for finding inviter if needed
+  
+  // Fetch the invite that was used for this user to join
+  let invitedBy = 'Unknown'; // Default value if no invite is found
+  try {
+    const invites = await member.guild.invites.fetch();
+    const usedInvite = invites.find(invite => invite.uses > 0 && invite.inviter.id === member.id);
+    if (usedInvite) {
+      invitedBy = usedInvite.inviter.tag;  // Get the inviter's tag
+    }
+  } catch (error) {
+    logger.error(`Error fetching invites for ${member.guild.name}: ${error.message}`);
+  }
+  
   const welcomeMessage = `
     **${member.user.tag}** just joined **${member.guild.name}**, Welcome!
     **Account Created On:** ${member.user.createdAt.toDateString()}
     **Invited By:** ${invitedBy}
     **Total Members:** ${member.guild.memberCount}
   `;
+  
+  // Send the welcome message with the user's avatar
   sendWelcomeGoodbyeMessage(welcomeChannel, welcomeMessage, member.user.displayAvatarURL({ dynamic: true, size: 512 }));
 });
+
 
 // Guild member removed (goodbye)
 client.on('guildMemberRemove', (member) => {
@@ -230,25 +255,82 @@ client.on('guildMemberRemove', (member) => {
   sendWelcomeGoodbyeMessage(welcomeChannel, goodbyeMessage);
 });
 
+  // Fetch the alert channel using the STAFF_CHANNEL_ID environment variable
+  const channelId = process.env.STAFF_CHANNEL_ID;
+  if (channelId) {
+    try {
+      const channel = await client.channels.fetch(channelId);
+      if (channel) {
+        await channel.send("⚠️ MoonBot has disconnected from Skynet.");
+      }
+    } catch (error) {
+      logger.error("Failed to send disconnect alert:", error.message);
+    }
+  } else {
+    logger.warn("STAFF_CHANNEL_ID not set in .env file.");
+  }
+});
+
 // Scheduling tasks using cron
 try {
-  cron.schedule('0 0 * * *', fetchFreeGames, { timezone: "America/New_York" });
+  cron.schedule('0 0 * * *', fetchFreeGames, { timezone: 'America/New_York' });
+  logger.info("Scheduled job for daily game announcements.");
 } catch (error) {
-  logger.error('Error with cron job:', error.message);
+  logger.error("Failed to schedule cron job:", error.message);
 }
 
-// Graceful shutdown handling
+// Shutdown gracefully on SIGINT or SIGTERM
 process.on('SIGINT', () => {
-  logger.info('Received SIGINT. Shutting down gracefully...');
+  logger.info("Bot is shutting down...");
   client.destroy();
-  process.exit();
+  process.exit(0);
 });
 
 process.on('SIGTERM', () => {
-  logger.info('Received SIGTERM. Shutting down gracefully...');
+  logger.info("Bot is shutting down...");
   client.destroy();
-  process.exit();
+  process.exit(0);
 });
 
-// Login the bot
+// Listen for the ready (connect) event
+client.on('ready', async () => {
+  logger.info("Bot has connected and is ready.");
+
+  // Fetch the alert channel using the STAFF_CHANNEL_ID environment variable
+  const channelId = process.env.STAFF_CHANNEL_ID;
+  if (channelId) {
+    try {
+      const channel = await client.channels.fetch(channelId);
+      if (channel) {
+        await channel.send("✅ MoonBot has re-established connection to Skynet.");
+      }
+    } catch (error) {
+      logger.error("Failed to send connect alert:", error.message);
+    }
+  } else {
+    logger.warn("STAFF_CHANNEL_ID not set in .env file.");
+  }
+});
+
+// Listen for disconnect event
+client.on('disconnect', async () => {
+  logger.warn("Bot has disconnected.");
+
+  // Fetch the alert channel using the STAFF_CHANNEL_ID environment variable
+  const channelId = process.env.STAFF_CHANNEL_ID;
+  if (channelId) {
+    try {
+      const channel = await client.channels.fetch(channelId);
+      if (channel) {
+        await channel.send("⚠️ MoonBot has disconnected from Skynet.");
+      }
+    } catch (error) {
+      logger.error("Failed to send disconnect alert:", error.message);
+    }
+  } else {
+    logger.warn("STAFF_CHANNEL_ID not set in .env file.");
+  }
+});
+
+// Log in to Discord
 client.login(process.env.DISCORD_TOKEN);
