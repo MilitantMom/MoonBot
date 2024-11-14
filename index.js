@@ -204,7 +204,6 @@ async function getOpenAIAnswer(question) {
   }
 }
 
-
 // Function to send welcome/goodbye messages
 function sendWelcomeGoodbyeMessage(channel, messageContent, avatarUrl) {
   return channel.send({
@@ -219,49 +218,168 @@ function sendWelcomeGoodbyeMessage(channel, messageContent, avatarUrl) {
 
 // Guild member added (welcome)
 client.on('guildMemberAdd', async (member) => {
-  const welcomeChannel = member.guild.channels.cache.find(c => c.name === 'welcome');
-  
-  // Fetch the invite that was used for this user to join
-  let invitedBy = 'Unknown'; // Default value if no invite is found
-  try {
-    const invites = await member.guild.invites.fetch();
-    const usedInvite = invites.find(invite => invite.uses > 0 && invite.inviter.id === member.id);
-    if (usedInvite) {
-      invitedBy = usedInvite.inviter.tag;  // Get the inviter's tag
-    }
-  } catch (error) {
-    logger.error(`Error fetching invites for ${member.guild.name}: ${error.message}`);
+  const welcomeChannelId = process.env.WELCOME_CHANNEL_ID;
+  if (!welcomeChannelId) return;
+
+  const welcomeChannel = await member.guild.channels.fetch(welcomeChannelId);
+  if (!welcomeChannel) {
+    logger.error(`Welcome channel not found for guild: ${member.guild.name}`);
+    return;
   }
-  
+
   const welcomeMessage = `
     **${member.user.tag}** just joined **${member.guild.name}**, Welcome!
     **Account Created On:** ${member.user.createdAt.toDateString()}
-    **Invited By:** ${invitedBy}
     **Total Members:** ${member.guild.memberCount}
   `;
-  
-  // Send the welcome message with the user's avatar
-  sendWelcomeGoodbyeMessage(welcomeChannel, welcomeMessage, member.user.displayAvatarURL({ dynamic: true, size: 512 }));
+
+  try {
+    await sendWelcomeGoodbyeMessage(welcomeChannel, welcomeMessage, member.user.displayAvatarURL({ dynamic: true, size: 512 }));
+    logger.info(`Welcome message sent to channel: ${welcomeMessage}`);
+  } catch (error) {
+    logger.error(`Error sending welcome message: ${error.message}`);
+  }
 });
 
-
 // Guild member removed (goodbye)
-client.on('guildMemberRemove', (member) => {
-  const welcomeChannel = member.guild.channels.cache.find(c => c.name === 'welcome');
+client.on('guildMemberRemove', async (member) => {
+  const welcomeChannelId = process.env.WELCOME_CHANNEL_ID;  // Fetch the welcome channel ID from .env
+  const welcomeChannel = await member.guild.channels.fetch(welcomeChannelId);  // Fetch the channel by ID
+  
   const goodbyeMessage = `
     Goodbye, ${member.user.tag}! We're sad to see you go.
     **Total Members:** ${member.guild.memberCount}
   `;
+  
   sendWelcomeGoodbyeMessage(welcomeChannel, goodbyeMessage);
 });
 
-  // Fetch the alert channel using the STAFF_CHANNEL_ID environment variable
+// Listen for the ready (connect) event
+client.on('ready', async () => {
+  logger.info("✅ MoonBot has successfully connected to Skynet.");
+// Guild member updated (role changes)
+client.on('guildMemberUpdate', async (oldMember, newMember) => {
+  const staffChannelId = process.env.STAFF_CHANNEL_ID;
+  if (!staffChannelId) return;
+
+  const staffChannel = await newMember.guild.channels.fetch(staffChannelId);
+  if (!staffChannel) return;
+
+  // Detect if a role was added or removed
+  const addedRoles = newMember.roles.cache.filter(role => !oldMember.roles.cache.has(role.id));
+  const removedRoles = oldMember.roles.cache.filter(role => !newMember.roles.cache.has(role.id));
+
+  if (addedRoles.size > 0 || removedRoles.size > 0) {
+    let message = `⬆️ **${newMember.user.tag}** was updated by **${newMember.guild.members.cache.get(oldMember.id)?.user.tag || 'Unknown'}**.`;
+
+    // Add removed roles
+    if (removedRoles.size > 0) {
+      message += `\nRoles Removed: ${removedRoles.map(role => role.name).join(', ')}`;
+    }
+
+    // Add added roles
+    if (addedRoles.size > 0) {
+      message += `\nRoles Added: ${addedRoles.map(role => role.name).join(', ')}`;
+    }
+
+    staffChannel.send(message);
+    logger.info(`User ${newMember.user.tag} roles updated by ${newMember.guild.members.cache.get(oldMember.id)?.user.tag || 'Unknown'}.`);
+  }
+});
+
+// User banned
+client.on('guildBanAdd', async (guild, user) => {
+  const staffChannelId = process.env.STAFF_CHANNEL_ID;
+  if (!staffChannelId) return;
+
+  const staffChannel = await guild.channels.fetch(staffChannelId);
+  if (!staffChannel) return;
+
+  const fetchedBan = await guild.bans.fetch(user.id);
+  const bannedBy = fetchedBan?.reason || 'Unknown';  // Using the ban reason as an indicator of who banned the user (if available)
+
+  const message = `⚠️ **${user.tag}** was banned by **${bannedBy}**.`;
+  staffChannel.send(message);
+  logger.info(`User ${user.tag} banned by ${bannedBy}.`);
+});
+
+// User unbanned
+client.on('guildBanRemove', async (guild, user) => {
+  const staffChannelId = process.env.STAFF_CHANNEL_ID;
+  if (!staffChannelId) return;
+
+  const staffChannel = await guild.channels.fetch(staffChannelId);
+  if (!staffChannel) return;
+
+  const message = `⚠️ **${user.tag}** was unbanned.`;
+  staffChannel.send(message);
+  logger.info(`User ${user.tag} unbanned.`);
+});
+
+// User kicked
+client.on('guildMemberRemove', async (member) => {
+  const staffChannelId = process.env.STAFF_CHANNEL_ID;
+  if (!staffChannelId) return;
+
+  const staffChannel = await member.guild.channels.fetch(staffChannelId);
+  if (!staffChannel) {
+    logger.error(`Staff channel not found for guild: ${member.guild.name}`);
+    return;
+  }
+
+  // Log the user who is leaving and the guild info
+  logger.debug(`User ${member.user.tag} is leaving the guild: ${member.guild.name}`);
+
+  const auditLogs = await member.guild.fetchAuditLogs({
+    type: 'KICK',
+    limit: 1,
+  });
+
+  const kickAction = auditLogs.entries.first();
+  const kickedBy = kickAction?.executor.tag || 'Unknown';
+  const message = `⚠️ **${member.user.tag}** was kicked by **${kickedBy}**.`;
+
+  // Send the message to the staff channel
+  try {
+    await staffChannel.send(message);
+    logger.info(`Kicked user message sent to staff channel: ${message}`);
+  } catch (error) {
+    logger.error(`Error sending kicked user message: ${error.message}`);
+  }
+});
+
+  // Send a message to the staff channel on connect
   const channelId = process.env.STAFF_CHANNEL_ID;
   if (channelId) {
     try {
       const channel = await client.channels.fetch(channelId);
       if (channel) {
-        await channel.send("⚠️ MoonBot has disconnected from Skynet.");
+        await channel.send("✅ MoonBot has successfully connected to Skynet.");
+      } else {
+        logger.warn("Staff channel not found.");
+      }
+    } catch (error) {
+      logger.error("Failed to send connect alert:", error.message);
+    }
+  } else {
+    logger.warn("STAFF_CHANNEL_ID not set in .env file.");
+  }
+});
+
+// Function to send disconnect alert to staff channel
+client.on('disconnect', async () => {
+  logger.warn("❌ MoonBot has disconnected from Skynet.");
+
+  // Send a message to the staff channel on disconnect
+  const channelId = process.env.STAFF_CHANNEL_ID;
+  if (channelId) {
+    try {
+      const channel = await client.channels.fetch(channelId);
+      if (channel) {
+        await channel.send("❌ MoonBot has disconnected from Skynet.");
+        logger.info("Disconnect message sent to staff channel.");
+      } else {
+        logger.warn("Staff channel not found.");
       }
     } catch (error) {
       logger.error("Failed to send disconnect alert:", error.message);
@@ -280,56 +398,16 @@ try {
 }
 
 // Shutdown gracefully on SIGINT or SIGTERM
-process.on('SIGINT', () => {
-  logger.info("Bot is shutting down...");
-  client.destroy();
+process.on('SIGINT', async () => {
+  logger.info("MoonBot is shutting down...");
+  await client.destroy();
   process.exit(0);
 });
 
-process.on('SIGTERM', () => {
-  logger.info("Bot is shutting down...");
-  client.destroy();
+process.on('SIGTERM', async () => {
+  logger.info("MoonBot is shutting down...");
+  await client.destroy();
   process.exit(0);
-});
-
-// Listen for the ready (connect) event
-client.on('ready', async () => {
-  logger.info("Bot has connected and is ready.");
-
-  // Fetch the alert channel using the STAFF_CHANNEL_ID environment variable
-  const channelId = process.env.STAFF_CHANNEL_ID;
-  if (channelId) {
-    try {
-      const channel = await client.channels.fetch(channelId);
-      if (channel) {
-        await channel.send("✅ MoonBot has re-established connection to Skynet.");
-      }
-    } catch (error) {
-      logger.error("Failed to send connect alert:", error.message);
-    }
-  } else {
-    logger.warn("STAFF_CHANNEL_ID not set in .env file.");
-  }
-});
-
-// Listen for disconnect event
-client.on('disconnect', async () => {
-  logger.warn("Bot has disconnected.");
-
-  // Fetch the alert channel using the STAFF_CHANNEL_ID environment variable
-  const channelId = process.env.STAFF_CHANNEL_ID;
-  if (channelId) {
-    try {
-      const channel = await client.channels.fetch(channelId);
-      if (channel) {
-        await channel.send("⚠️ MoonBot has disconnected from Skynet.");
-      }
-    } catch (error) {
-      logger.error("Failed to send disconnect alert:", error.message);
-    }
-  } else {
-    logger.warn("STAFF_CHANNEL_ID not set in .env file.");
-  }
 });
 
 // Log in to Discord

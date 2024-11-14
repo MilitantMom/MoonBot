@@ -149,3 +149,24 @@
 {"level":"info","message":"Message received: <@1305228572046262374> hello","timestamp":"2024-11-14T19:15:33.742Z"}
 {"level":"info","message":"Bot is shutting down...","timestamp":"2024-11-14T19:53:49.778Z"}
 {"level":"info","message":"Bot is ready!","timestamp":"2024-11-14T20:07:21.398Z"}
+{"level":"info","message":"Scheduled job for daily game announcements.","timestamp":"2024-11-14T20:22:04.709Z"}
+{"level":"info","message":"Bot has connected and is ready.","timestamp":"2024-11-14T20:22:05.557Z"}
+{"level":"warn","message":"STAFF_CHANNEL_ID not set in .env file.","timestamp":"2024-11-14T20:22:05.557Z"}
+{"level":"info","message":"Message received: <@1305228572046262374> are you working","timestamp":"2024-11-14T20:23:49.427Z"}
+{"level":"info","message":"Bot is shutting down...","timestamp":"2024-11-14T20:29:23.010Z"}
+{"level":"info","message":"Scheduled job for daily game announcements.","timestamp":"2024-11-14T20:31:06.458Z"}
+{"level":"info","message":"Bot has connected and is ready.","timestamp":"2024-11-14T20:31:07.288Z"}
+{"level":"info","message":"Bot is shutting down...","timestamp":"2024-11-14T20:33:47.382Z"}
+{"level":"info","message":"Scheduled job for daily game announcements.","timestamp":"2024-11-14T20:33:59.035Z"}
+{"level":"info","message":"✅ MoonBot has successfully connected to Skynet.","timestamp":"2024-11-14T20:34:00.182Z"}
+{"level":"info","message":"MoonBot is shutting down...","timestamp":"2024-11-14T20:37:14.021Z"}
+{"level":"info","message":"Scheduled job for daily game announcements.","timestamp":"2024-11-14T20:39:17.292Z"}
+{"level":"info","message":"✅ MoonBot has successfully connected to Skynet.","timestamp":"2024-11-14T20:39:18.214Z"}
+{"level":"info","message":"Message received: ","timestamp":"2024-11-14T20:43:42.448Z"}
+{"level":"info","message":"MoonBot is shutting down...","timestamp":"2024-11-14T20:48:42.849Z"}
+{"level":"info","message":"Scheduled job for daily game announcements.","timestamp":"2024-11-14T20:49:45.142Z"}
+{"level":"info","message":"✅ MoonBot has successfully connected to Skynet.","timestamp":"2024-11-14T20:49:46.175Z"}
+{"level":"info","message":"Scheduled job for daily game announcements.","timestamp":"2024-11-14T21:07:41.746Z"}
+{"level":"info","message":"✅ MoonBot has successfully connected to Skynet.","timestamp":"2024-11-14T21:07:42.560Z"}
+{"level":"info","message":"Message received: Lol yea i invited her because a mean i found on her page also that my gf bunny","timestamp":"2024-11-14T21:09:11.070Z"}
+{"level":"info","message":"MoonBot is shutting down...","timestamp":"2024-11-14T21:10:17.869Z"}
