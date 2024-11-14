@@ -1,11 +1,14 @@
-require('dotenv').config();
 const { Client, GatewayIntentBits } = require('discord.js');
-const https = require('https');
+const axios = require('axios');
 const cron = require('node-cron');
-const winston = require('winston');
-const { OpenAI } = require('openai'); // Import OpenAI package
+const https = require('https');
+const { config } = require('dotenv');
+const winston = require('winston'); // Import winston for logging
 
-// Initialize logger
+// Load environment variables
+config();
+
+// Set up logger
 const logger = winston.createLogger({
   level: process.env.NODE_ENV === 'development' ? 'debug' : 'info',
   format: winston.format.combine(
@@ -18,56 +21,27 @@ const logger = winston.createLogger({
   ],
 });
 
-// List required environment variables
-const requiredEnvVars = [
-  'DISCORD_TOKEN',
-  'EPICGAMESFREE_KEY',
-  'FREE_GAMES_CHANNEL_ID',
-  'WELCOME_CHANNEL_ID',
-  'OPENAI_API_KEY',
-];
+const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages, GatewayIntentBits.MessageContent] });
 
-requiredEnvVars.forEach((envVar) => {
-  if (!process.env[envVar]) {
-    logger.error(`Missing ${envVar} in .env`);
-    process.exit(1);
-  }
-});
+// API keys and other secrets
+const openAiApiKey = process.env.OPENAI_API_KEY;
+const epicGamesApiKey = process.env.EPIC_GAMES_API_KEY;
+const giphyApiKey = process.env.GIPHY_API_KEY;
 
-// Retrieve environment variables
-const {
-  DISCORD_TOKEN: token,
-  EPICGAMESFREE_KEY: epicGamesApiKey,
-  FREE_GAMES_CHANNEL_ID: freeGamesChannelId,
-  WELCOME_CHANNEL_ID: welcomeChannelId,
-  OPENAI_API_KEY: openaiApiKey
-} = process.env;
+let lastCommandTimestamp = 0;
 
-const client = new Client({
-  intents: [
-    GatewayIntentBits.Guilds,
-    GatewayIntentBits.GuildMembers,
-    GatewayIntentBits.MessageContent,
-    GatewayIntentBits.GuildMessages,
-  ]
-});
+const DICE_SIZES = {
+  d4: 4,
+  d6: 6,
+  d8: 8,
+  d10: 10,
+  d12: 12,
+  d20: 20,
+  d100: 100
+};
 
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: openaiApiKey, // Set the API key from the environment variable
-});
-
-// This event runs when the bot is ready
-client.once('ready', () => {
-  logger.info('BOT ONLINE');
-  fetchFreeGames();
-
-  // Set up cron job to fetch free games every 24 hours at midnight in a specified time zone
-  cron.schedule('0 0 * * *', fetchFreeGames, { timezone: "America/New_York" });
-});
-
-// Function to fetch free games from the Epic Games API using https module
-function fetchFreeGames() {
+// Function to fetch free games from Epic Games
+async function fetchFreeGames() {
   const options = {
     method: 'GET',
     hostname: 'free-epic-games.p.rapidapi.com',
@@ -78,153 +52,203 @@ function fetchFreeGames() {
     }
   };
 
-  const req = https.request(options, (res) => {
-    let data = '';
+  try {
+    const data = await fetchData(options);
+    logger.debug("Raw API response:", data);
+    const freeGames = JSON.parse(data);
+    const freeGamesList = freeGames.map(game => `${game.title} - ${game.url}`).join("\n");
 
-    res.on('data', (chunk) => {
-      data += chunk;
-    });
-
-    res.on('end', async () => {
-      try {
-        const freeGames = JSON.parse(data);
-
-        // Improved validation for free games data format
-        if (!Array.isArray(freeGames) || freeGames.some(game => !game.title || !game.url)) {
-          logger.warn("Received unexpected data format for free games.");
-          return;
-        }
-
-        const channel = client.channels.cache.get(freeGamesChannelId);
-        if (!channel) {
-          logger.warn("Free games channel not found!");
-          return;
-        }
-
-        const gameList = freeGames.map(game => `**${game.title}** - ${game.url}`).join('\n');
-        const message = `🎮 **Free Games Available on Epic Games Store** 🎮\n\n${gameList}\n\nHurry, grab them before they're gone!`;
-
-        await channel.send(message);
-      } catch (error) {
-        logger.error('Error processing free games response:', error.message);
-      }
-    });
-  });
-
-  req.on('error', (error) => {
+    const channel = await client.channels.fetch(process.env.GAME_CHANNEL_ID);
+    channel.send(`**Free Games on Epic Games**\n${freeGamesList}`);
+  } catch (error) {
     logger.error('Error fetching free games:', error.message);
-  });
-
-  req.end();
+  }
 }
 
-// Invite cache to store invites
-let inviteCache = {};
+// Function to fetch data with retries
+async function fetchData(options) {
+  const res = await new Promise((resolve, reject) => {
+    const req = https.request(options, (res) => {
+      let data = '';
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
+      res.on('end', () => resolve(data));
+    });
 
-// Refresh invite cache periodically (e.g., every 10 minutes)
-setInterval(async () => {
-  client.guilds.cache.forEach(async (guild) => {
-    await fetchInvites(guild);
+    req.on('error', (error) => reject(error));
+    req.end();
   });
-}, 10 * 60 * 1000);
+  return res;
+}
 
+// Function to fetch and update invites in each guild
 async function fetchInvites(guild) {
   try {
     const invites = await guild.invites.fetch();
-    inviteCache[guild.id] = invites;
+    // Store or compare invites for your needs
+    logger.debug(`Invites for guild ${guild.name}: ${invites.size}`);
   } catch (error) {
-    logger.error("Error fetching invites:", error.message);
+    logger.error(`Error fetching invites for guild ${guild.name}:`, error.message);
   }
 }
 
-client.on('guildMemberAdd', async (member) => {
-  if (!inviteCache[member.guild.id]) {
-    await fetchInvites(member.guild);
+// Optimized interval for fetching invites every 10 minutes
+setInterval(async () => {
+  for (const guild of client.guilds.cache.values()) {
+    await fetchInvites(guild);
   }
+}, 10 * 60 * 1000);
 
-  const welcomeChannel = member.guild.channels.cache.get(welcomeChannelId);
-  if (!welcomeChannel) {
-    logger.warn("Welcome channel not found!");
+// Optimized command handling to prevent spam
+client.on('messageCreate', async (message) => {
+  if (message.author.bot) return;
+
+  const now = Date.now();
+  if (now - lastCommandTimestamp < 5000) { // 5 seconds cooldown
     return;
   }
+  lastCommandTimestamp = now;
 
-  const usedInvite = inviteCache[member.guild.id]?.find(invite => invite.uses > 0 && invite.inviter);
-  const invitedBy = usedInvite ? usedInvite.inviter.tag : 'Unknown';
+  logger.info(`Message received: ${message.content}`);
 
+  // Ping command
+  if (message.content === '!ping') {
+    return message.reply('Pong!');
+  }
+
+  // Handle @MoonBot [message]
+  if (message.mentions.has(client.user)) {
+    const question = message.content.replace(`<@!${client.user.id}>`, '').trim();
+    if (question) {
+      try {
+        const answer = await getOpenAIAnswer(question);
+        message.reply(answer);
+      } catch (error) {
+        message.reply("Oops! Something went wrong with my brain.");
+      }
+    }
+  }
+
+  // Handle other commands here (e.g., OpenAI API call)
+  if (message.content.startsWith('!ask')) {
+    const question = message.content.slice(5).trim();
+    try {
+      const answer = await getOpenAIAnswer(question);
+      message.reply(answer);
+    } catch (error) {
+      message.reply("Oops! Something went wrong with my response.");
+    }
+  }
+
+  // Dice rolling command
+  if (message.content.startsWith('!roll')) {
+    const args = message.content.split(' ');
+    const diceType = args[1]?.toLowerCase();
+
+    if (!DICE_SIZES[diceType]) {
+      await message.reply("Invalid dice type! Please use one of the following: d4, d6, d8, d10, d12, d20, d100.");
+      return;
+    }
+
+    // Send a random GIF if possible
+    const gifCategories = ["nervous", "rolling", "sweating"];
+    const selectedCategory = gifCategories[Math.floor(Math.random() * gifCategories.length)];
+    logger.debug(`Fetching GIF for category: ${selectedCategory}`);
+    try {
+      const gifResponse = await axios.get(`https://api.giphy.com/v1/gifs/random?tag=${selectedCategory}&api_key=${giphyApiKey}`);
+      const gifUrl = gifResponse.data.data.images.original.url;
+      logger.debug(`GIF URL fetched: ${gifUrl}`);
+      await message.channel.send(gifUrl);
+    } catch (error) {
+      logger.error('Error fetching GIF:', error.message);
+    }
+
+    // Roll the dice and send the result
+    const diceMax = DICE_SIZES[diceType];
+    const rollResult = Math.floor(Math.random() * diceMax) + 1;
+    logger.debug(`Dice roll result for ${diceType}: ${rollResult}`);
+    await message.reply(`You rolled a ${diceType.toUpperCase()} and got: **${rollResult}**`);
+  }
+});
+
+// Function to get answer from OpenAI API
+async function getOpenAIAnswer(question) {
+  const url = 'https://api.openai.com/v1/completions';
+  const data = {
+    model: 'text-davinci-003',
+    prompt: question,
+    max_tokens: 150
+  };
+
+  try {
+    const response = await axios.post(url, data, {
+      headers: {
+        'Authorization': `Bearer ${openAiApiKey}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    return response.data.choices[0].text.trim();
+  } catch (error) {
+    logger.error('Error fetching OpenAI response:', error.message);
+    throw error; // Re-throw to be handled at the message level
+  }
+}
+
+// Function to send welcome/goodbye messages
+function sendWelcomeGoodbyeMessage(channel, messageContent, avatarUrl) {
+  return channel.send({
+    content: messageContent,
+    embeds: [
+      {
+        image: { url: avatarUrl }
+      }
+    ]
+  });
+}
+
+// Guild member added (welcome)
+client.on('guildMemberAdd', async (member) => {
+  const welcomeChannel = member.guild.channels.cache.find(c => c.name === 'welcome');
+  const invitedBy = "Unknown"; // Implement logic for finding inviter if needed
   const welcomeMessage = `
     **${member.user.tag}** just joined **${member.guild.name}**, Welcome!
     **Account Created On:** ${member.user.createdAt.toDateString()}
     **Invited By:** ${invitedBy}
     **Total Members:** ${member.guild.memberCount}
   `;
-
-  welcomeChannel.send({
-    content: welcomeMessage,
-    embeds: [
-      {
-        image: { url: member.user.displayAvatarURL({ dynamic: true, size: 512 }) }
-      }
-    ]
-  });
+  sendWelcomeGoodbyeMessage(welcomeChannel, welcomeMessage, member.user.displayAvatarURL({ dynamic: true, size: 512 }));
 });
 
+// Guild member removed (goodbye)
 client.on('guildMemberRemove', (member) => {
-  const welcomeChannel = member.guild.channels.cache.get(welcomeChannelId);
-  if (!welcomeChannel) {
-    logger.warn("Welcome channel not found!");
-    return;
-  }
-
+  const welcomeChannel = member.guild.channels.cache.find(c => c.name === 'welcome');
   const goodbyeMessage = `
     Goodbye, ${member.user.tag}! We're sad to see you go.
     **Total Members:** ${member.guild.memberCount}
   `;
-  welcomeChannel.send(goodbyeMessage);
+  sendWelcomeGoodbyeMessage(welcomeChannel, goodbyeMessage);
 });
 
-client.on('messageCreate', async (message) => {
-  if (message.author.bot) return;
+// Scheduling tasks using cron
+try {
+  cron.schedule('0 0 * * *', fetchFreeGames, { timezone: "America/New_York" });
+} catch (error) {
+  logger.error('Error with cron job:', error.message);
+}
 
-  logger.info(`Message received: ${message.content}`);
-
-  if (message.content === '!ping') {
-    message.reply('Pong!');
-    logger.info('Ping command used.');
-    return;
-  }
-
-  if (message.mentions.has(client.user)) {
-    const userInput = message.content.replace(`<@${client.user.id}>`, '').trim();
-
-    if (!userInput) {
-      message.reply("Please provide a message for me to respond to.");
-      return;
-    }
-
-    try {
-      logger.debug(`Received user input: "${userInput}"`);
-
-      const chatResponse = await openai.chat.completions.create({
-        model: 'gpt-4o-mini', // Use the model you're authorized to access
-        messages: [
-          { role: 'user', content: userInput },
-        ],
-        temperature: 0.7,  // Optional but recommended
-      });
-
-      const messageContent = chatResponse.choices[0].message.content;
-
-      if (messageContent.length > 2000) {
-        message.reply(messageContent.slice(0, 2000)); // Trim response to fit Discord's message length
-      } else {
-        message.reply(messageContent);
-      }
-    } catch (error) {
-      logger.error('Error processing OpenAI response:', error.message);
-      message.reply("Oops! Something went wrong with my response.");
-    }
-  }
+// Graceful shutdown handling
+process.on('SIGINT', () => {
+  logger.info('Received SIGINT. Shutting down gracefully...');
+  client.destroy();
+  process.exit();
 });
 
-// Log into Discord
-client.login(token);
+process.on('SIGTERM', () => {
+  logger.info('Received SIGTERM. Shutting down gracefully...');
+  client.destroy();
+  process.exit();
+});
+
+// Login the bot
+client.login(process.env.DISCORD_TOKEN);

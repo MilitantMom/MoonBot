@@ -79,3 +79,20 @@
 {"level":"info","message":"Ping command used.","timestamp":"2024-11-13T21:01:38.305Z"}
 {"level":"info","message":"Message received: <@1305228572046262374> what is your purpose?","timestamp":"2024-11-13T21:01:44.690Z"}
 {"level":"error","message":"Error while calling OpenAI: ","timestamp":"2024-11-13T21:01:45.448Z"}
+{"level":"info","message":"BOT ONLINE","timestamp":"2024-11-13T21:17:21.018Z"}
+{"level":"warn","message":"Received unexpected data format for free games.","timestamp":"2024-11-13T21:17:21.483Z"}
+{"level":"info","message":"Message received: <@1305228572046262374> hi","timestamp":"2024-11-13T21:18:33.632Z"}
+{"level":"error","message":"Error processing OpenAI response:","timestamp":"2024-11-13T21:18:33.868Z"}
+{"level":"info","message":"Message received: !ping","timestamp":"2024-11-13T21:40:17.675Z"}
+{"level":"info","message":"Message received: <@1305228572046262374> hi","timestamp":"2024-11-13T21:40:24.461Z"}
+{"level":"info","message":"Received SIGINT. Shutting down gracefully...","timestamp":"2024-11-13T21:50:00.008Z"}
+{"level":"info","message":"Message received: !roll d20","timestamp":"2024-11-14T00:18:26.757Z"}
+{"level":"info","message":"Received SIGINT. Shutting down gracefully...","timestamp":"2024-11-14T00:20:56.164Z"}
+{"level":"info","message":"Message received: !roll d6","timestamp":"2024-11-14T00:23:50.269Z"}
+{"level":"info","message":"Message received: roll d100","timestamp":"2024-11-14T00:24:05.773Z"}
+{"level":"info","message":"Message received: good girl","timestamp":"2024-11-14T00:24:11.153Z"}
+{"level":"info","message":"Message received: !roll d10","timestamp":"2024-11-14T00:24:29.823Z"}
+{"level":"info","message":"Message received: !roll d100","timestamp":"2024-11-14T00:25:05.933Z"}
+{"level":"info","message":"Message received: !roll d5000","timestamp":"2024-11-14T00:25:27.898Z"}
+{"level":"info","message":"Message received: id say thats looking quite cool if i do say so myself","timestamp":"2024-11-14T00:25:52.448Z"}
+{"level":"info","message":"Received SIGINT. Shutting down gracefully...","timestamp":"2024-11-14T00:25:56.070Z"}
